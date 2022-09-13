@@ -2,11 +2,12 @@ package Server;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
+import freemarker.template.Configuration;
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
+import freemarker.template.TemplateExceptionHandler;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -20,6 +21,38 @@ public abstract class BasicServer {
     private final HttpServer server;
     private final String dataDir = "data";
     private Map<String, RouteHandler> routes = new HashMap<>();
+    private final static Configuration freemarker = initFreeMarker();
+
+    private static Configuration initFreeMarker(){
+        try {
+            Configuration cfg = new Configuration(Configuration.VERSION_2_3_29);
+            cfg.setDirectoryForTemplateLoading(new File("data"));
+            cfg.setDefaultEncoding("UTF-8");
+            cfg.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
+            cfg.setLogTemplateExceptions(false);
+            cfg.setWrapUncheckedExceptions(false);
+            cfg.setFallbackOnNullLoopVariable(false);
+            return cfg;
+        }catch (IOException e){
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    protected void renderTemplate(HttpExchange exchange, String templateFile, Object dataModel){
+        try {
+            Template temp = freemarker.getTemplate(templateFile);
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            try (OutputStreamWriter writer = new OutputStreamWriter(stream)){
+                temp.process(dataModel, writer);
+                writer.flush();
+                var data = stream.toByteArray();
+                sendByteData(exchange, ResponseCodes.OK, ContentType.TEXT_HTML, data);
+            }
+        }catch (IOException | TemplateException e){
+            e.getStackTrace();
+        }
+    }
 
     protected BasicServer(String host, int port) throws IOException {
         server = createServer(host, port);
@@ -71,7 +104,7 @@ public abstract class BasicServer {
         // эти обрабатывают запросы с указанными расширениями
         registerFileHandler(".css", ContentType.TEXT_CSS);
         registerFileHandler(".html", ContentType.TEXT_HTML);
-        registerFileHandler(".jpg", ContentType.IMAGE_JPEG);
+        registerFileHandler(".jpeg", ContentType.IMAGE_JPEG);
         registerFileHandler(".png", ContentType.IMAGE_PNG);
 
     }
@@ -168,4 +201,5 @@ public abstract class BasicServer {
     protected void setCookie(HttpExchange exchange, Cookie cookie){
         exchange.getResponseHeaders().add("Set-Cookie", cookie.toString());
     }
+
 }
