@@ -6,14 +6,14 @@ public class Candidate {
     private String photo;
     private int votes;
     private int allVotes;
-    private int percentVotes;
+    private double percentVotes;
 
-    public int getPercentVotes() {
+    public double getPercentVotes() {
         return percentVotes;
     }
 
     public void setPercentVotes() {
-        this.percentVotes = (100 * votes) / allVotes;
+        this.percentVotes = (double)(100 * votes) / allVotes;
     }
 
     public int getAllVotes() {
@@ -56,11 +56,10 @@ public class Candidate {
         this.votes = votes;
     }
 
-    public Candidate(Integer id, String name, String photo, int votes, int allVotes) {
+    public Candidate(Integer id, String name, String photo, int votes) {
         this.id = id;
         this.name = name;
         this.photo = photo;
         this.votes = votes;
-        this.allVotes = allVotes;
     }
 }

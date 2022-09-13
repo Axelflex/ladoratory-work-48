@@ -21,7 +21,9 @@ public class CandidateDataModel {
 
     public void generateAllVotes(){
         for (int i = 0; i < candidates.size(); i++) {
-            allVotes = allVotes + candidates.get(1).getVotes();
+            if(candidates.get(1).getVotes() != 0){
+                allVotes = allVotes + candidates.get(i).getVotes();
+            }
         }
     }
 

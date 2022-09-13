@@ -28,7 +28,6 @@ public class VoteMachine extends BasicServer {
         int id = Integer.parseInt(parsed.get("candidateId"));
         Candidate candidate = service.getCandidate(id);
 
-
         renderTemplate(exchange, "thankyou.html", getSingleCandidate(candidate));
     }
 
@@ -38,11 +37,19 @@ public class VoteMachine extends BasicServer {
 
     private SingleCandidateDataModel getSingleCandidate(Candidate candidate){
         SingleCandidateDataModel singleCandidateDataModel = new SingleCandidateDataModel(candidate);
-        singleCandidateDataModel.getVoted(candidate);
-
         CandidateDataModel candidateDataModel = new CandidateDataModel(service.getAllCandidates());
-
+        // +1 к голосу
+        singleCandidateDataModel.getVoted(candidate);
+        //все голоса передаются в кандидата
         candidate.setAllVotes(candidateDataModel.getAllVotes());
+        candidate.setPercentVotes();
+        //очистка счетчика всех голосов
+        candidateDataModel.setAllVotes(0);
+        //candidate.setPercentVotes();
+
+
+
+
         return singleCandidateDataModel;
     }
 
